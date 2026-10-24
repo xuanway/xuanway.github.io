@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#181818" />
+  <title>Scientific Research Philosophy</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page-bg: transparent;
+      --card-bg: rgba(255, 255, 255, 0.82);
+      --text: #224c8b;
+      --muted: #637a99;
+      --green: #23845a;
+      --red: #c84c59;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: Georgia, serif;
+    }
+
+    .philosophy-card {
+      width: min(860px, calc(100% - 24px)); /* Compact outer width; adjust 860px to taste */
+      margin: 8px auto;
+      padding: 16px 22px 17px;
+      border-radius: 20px;
+      background: var(--card-bg);
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 9px 0 0;
+      color: #4d6995;
+      font-size: 1.25em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      max-width: 740px;
+      margin: 13px auto 0;
+    }
+
+    .formula {
+      margin: 0;
+      font-size: 1.5em;
+      font-weight: 400;
+      line-height: 1.12;
+      white-space: nowrap;
+      font-variant-numeric: lining-nums;
+    }
+
+    .formula sup {
+      font-size: 60%;
+      line-height: 0;
+      vertical-align: super;
+    }
+
+    .comparison-label {
+      margin: 5px 0 0;
+      font-size: 1em;
+    }
+
+    .improvement .comparison-label { color: var(--green); }
+    .decline .comparison-label { color: var(--red); }
+
+    .closing-message {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1em;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 650px) {
+      .philosophy-card {
+        width: calc(100% - 20px);
+        margin: 7px auto;
+        border-radius: 17px;
+        padding: 15px 10px 16px;
+      }
+      h1 { margin-top: 10px; }
+      .comparison { gap: 10px; margin-top: 14px; }
+      .formula { font-size: 1.25em; }
+      .comparison-label { margin-top: 5px; }
+      .closing-message { margin-top: 13px; }
+    }
+
+    @media (max-width: 360px) {
+      .formula { font-size: 1.2em; }
+      .comparison { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="philosophy-card" aria-labelledby="philosophy-title">
+    <p class="eyebrow">Scientific Research Philosophy</p>
+    <h1 id="philosophy-title">Consistency Compounds.</h1>
+
+    <section class="comparison" aria-label="Daily improvement versus daily decline">
+      <div class="improvement">
+        <p class="formula">1.01<sup>365</sup> ≈ 37.8</p>
+        <p class="comparison-label">Daily Improvement</p>
+      </div>
+      <div class="decline">
+        <p class="formula">0.99<sup>365</sup> ≈ 0.03</p>
+        <p class="comparison-label">Daily Decline</p>
+      </div>
+    </section>
+
+    <p class="closing-message">Stay curious. Improve daily. Persevere relentlessly.</p>
+  </main>
+</body>
+</html>

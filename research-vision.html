@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#181818">
+  <meta name="description" content="Interactive research vision diagram: architecture, compiler optimization, and hardware security.">
+  <title>Research Vision | Interactive Roadmap</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: transparent;
+      --panel: rgba(255, 255, 255, .66);
+      --card: rgba(255, 255, 255, .76);
+      --text: #24364d;
+      --muted: #61738a;
+      --line: rgba(66, 101, 145, .2);
+      --accent: #527bbd;
+      --focus: #316da8;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 0;
+      height: auto;
+      background: transparent;
+      color: var(--text);
+      font-family: Georgia, serif;
+    font-size: 14px;
+    }
+    .diagram {
+      width: min(100%, 960px);
+      margin: 0 auto;
+      padding: 5px 10px 2px;
+    }
+    .node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    gap: 3px;
+    width: 100%;
+      min-width: 0;
+      text-align: center;
+    border-radius: 12px;
+    padding: 6px 12px;
+      background: var(--panel);
+      border: 1px solid rgba(74, 108, 151, .18);
+      color: var(--text);
+      appearance: none;
+      font: inherit;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+    .node:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 4px;
+    }
+    .node:hover { background-color: rgba(255, 255, 255, .94); border-color: rgba(82, 123, 189, .48); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(45, 71, 105, .12); }
+    .node:active { transform: translateY(0) scale(0.995); }
+    /* Static blue → teal → violet gradient border, matching the reference. */
+    .node[aria-expanded="true"] {
+      border-color: #54a9f8; /* Fallback when gradient masking is unsupported. */
+      box-shadow: 0 0 0 1px rgba(76, 175, 235, .13), 0 8px 24px rgba(99, 102, 241, .10);
+    }
+    .node[aria-expanded="true"]::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      padding: 3px;
+      background: linear-gradient(
+        125deg,
+        #49a7fa 0%,
+        #38c9e2 25%,
+        #2ddfc0 51%,
+        #9386f4 78%,
+        #b065ef 100%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .node__title { font-size: 1.06em; line-height: 1.22; font-weight: 700; }
+    .node__subtitle { color: var(--muted); font-size: .84em; line-height: 1.25; }
+    .vision {
+    min-height: 60px;
+    background: linear-gradient(115deg, rgba(239, 246, 255, .88), rgba(255, 255, 255, .72) 68%, rgba(239, 246, 255, .88));
+      border-color: rgba(82, 123, 189, .32);
+    }
+    .vision .node__subtitle { color: #526982; }
+    .directions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .direction { background: linear-gradient(145deg, rgba(255, 255, 255, .8), rgba(247, 250, 255, .68)); border-color: var(--line); min-height: 48px; border-radius: 12px; }
+    .method { min-height: 58px; border-color: rgba(82, 123, 189, .3); background: rgba(232, 242, 255, .68); }
+    .outcome { background: linear-gradient(145deg, rgba(239, 246, 255, .82), rgba(255, 255, 255, .72)); border-color: rgba(82, 123, 189, .3); min-height: 60px; }
+    .connector {
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8190a3;
+      user-select: none;
+      pointer-events: none;
+    }
+    .connector svg { width: 13px; height: 13px; }
+    .hint {
+      margin: 3px 0 0;
+      color: #748197;
+    font-size: 10px;
+    text-align: center;
+    }
+    .popover {
+      position: fixed;
+      z-index: 101;
+      width: min(380px, calc(100vw - 24px));
+      max-height: min(440px, calc(100dvh - 32px));
+      overflow-y: auto;
+      border: 1px solid rgba(72, 101, 139, .24);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .96);
+      color: #26384f;
+      box-shadow: 0 22px 60px rgba(38, 60, 87, .2), 0 4px 14px rgba(38, 60, 87, .1);
+      backdrop-filter: blur(14px);
+      padding: 16px 18px 15px;
+      overscroll-behavior: contain;
+    }
+    .popover[hidden], .scrim[hidden] { display: none !important; }
+    .popover__eyebrow {
+      font-size: small;
+      font-weight: 700;
+      color: #527bbd;
+      text-transform: uppercase;
+      padding-right: 36px;
+    }
+    .popover h2 { margin: 6px 34px 5px 0; font-size: 1.22em; line-height: 1.3; }
+    .popover__zh { color: #526982; font-size: .92em; margin: 0 0 9px; }
+    .popover__desc { font-size: .95em; line-height: 1.5; color: #394c63; margin: 0; }
+    .popover__tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
+    .tag {
+      padding: 4px 7px;
+      border: 1px solid rgba(82, 123, 189, .2);
+      background: rgba(82, 123, 189, .07);
+      color: #3e5c80;
+      font-size: small;
+      border-radius: 999px;
+    }
+    .popover__close {
+      position: absolute;
+      right: 13px;
+      top: 13px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 9px;
+      background: #e8eef6;
+      color: #344a64;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .popover__close:hover, .popover__close:focus-visible { background: #dce7f4; }
+    .popover__caret {
+      position: absolute;
+      width: 13px;
+      height: 13px;
+      left: var(--caret-left, 50%);
+      transform: translateX(-50%) rotate(45deg);
+      background: rgba(255, 255, 255, .96);
+      pointer-events: none;
+    }
+    .popover[data-side="below"] { overflow: visible; }
+    .popover[data-side="above"] { overflow: visible; }
+    .popover[data-side="below"] .popover__caret {
+      top: -7px; border-top: 1px solid rgba(72, 101, 139, .24); border-left: 1px solid rgba(72, 101, 139, .24);
+    }
+    .popover[data-side="above"] .popover__caret {
+      bottom: -7px; border-bottom: 1px solid rgba(72, 101, 139, .24); border-right: 1px solid rgba(72, 101, 139, .24);
+    }
+    .scrim { display: none; }
+    @media (max-width: 760px) {
+      .diagram { padding: 5px 8px 5px; }
+      .vision { min-height: 58px; }
+      .directions { grid-template-columns: 1fr; gap: 5px; }
+      .direction { min-height: 43px; }
+      .method, .outcome { min-height: 58px; }
+      .node { padding: 6px 10px; border-radius: 11px; gap: 3px; }
+      .connector { height: 15px; }
+      .connector svg { width: 12px; height: 12px; }
+      .scrim:not([hidden]) {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(31, 49, 72, .2);
+        z-index: 100;
+      }
+      .popover {
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 12px !important;
+        top: auto !important;
+        width: auto !important;
+        max-height: min(68dvh, 440px);
+        border-radius: 18px;
+        padding: 16px 18px;
+      }
+      .popover[data-side="below"], .popover[data-side="above"] { overflow-y: auto; }
+      .popover__caret { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="diagram" aria-label="Research vision interactive diagram">
+    <button type="button" class="node vision" data-topic="vision" aria-expanded="false" aria-controls="research-popover" aria-haspopup="dialog">
+      <span class="node__title">Research Vision</span>
+      <span class="node__subtitle">Advancing AI Computility</span>
+    </button>
+    <div class="connector" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v17m-7-7 7 7 7-7"/></svg>
+    </div>
+    <section class="directions" aria-label="Three research directions">
+      <button type="button" class="node direction" data-topic="architecture" aria-expanded="false" aria-controls="research-popover" aria-haspopup="dialog">
+        <span class="node__title">Accelerator Architectures</span>
+      </button>
+      <button type="button" class="node direction" data-topic="compiler" aria-expanded="false" aria-controls="research-popover" aria-haspopup="dialog">
+        <span class="node__title">Compiler Optimization</span>
+      </button>
+      <button type="button" class="node direction" data-topic="security" aria-expanded="false" aria-controls="research-popover" aria-haspopup="dialog">
+        <span class="node__title">Hardware Security</span>
+      </button>
+    </section>
+    <div class="connector" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v17m-7-7 7 7 7-7"/></svg>
+    </div>
+    <button type="button" class="node method" data-topic="codesign" aria-expanded="false" aria-controls="research-popover" aria-haspopup="dialog">
+      <span class="node__title">Cross-Layer Co-Design &amp; Optimization</span>
+      <span class="node__subtitle">Architecture · Compiler · Security</span>
+    </button>
+    <div class="connector" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v17m-7-7 7 7 7-7"/></svg>
+    </div>
+    <button type="button" class="node outcome" data-topic="outcome" aria-expanded="false" aria-controls="research-popover" aria-haspopup="dialog">
+      <span class="node__title">Efficient &amp; Trustworthy AI Computing Systems</span>
+      <span class="node__subtitle">Performance · Energy Efficiency · Trustworthiness</span>
+    </button>
+    <p class="hint">Click any box to explore</p>
+  </main>
+  <div id="popover-scrim" class="scrim" hidden aria-hidden="true"></div>
+  <aside id="research-popover" class="popover" role="dialog" aria-modal="false" aria-labelledby="popover-title" aria-describedby="popover-desc" data-side="below" hidden>
+    <span class="popover__caret" aria-hidden="true"></span>
+    <button class="popover__close" id="popover-close" type="button" aria-label="Close description">×</button>
+    <div class="popover__eyebrow" id="popover-category"></div>
+    <h2 id="popover-title"></h2>
+    <p class="popover__zh" id="popover-zh"></p>
+    <p class="popover__desc" id="popover-desc"></p>
+    <div class="popover__tags" id="popover-tags" aria-label="Keywords"></div>
+  </aside>
+  <script>
+    const TOPICS = {
+      vision: {
+        category: 'Research Vision',
+        title: 'Advancing AI Computility',
+        zh: 'Research Vision: Advancing AI Computing Capabilities',
+        description: 'Explore high-performance, energy-efficient, and trustworthy AI computing architectures and systems that support next-generation intelligent applications.',
+        tags: ['High Performance', 'Energy Efficiency', 'Trustworthy AI']
+      },
+      architecture: {
+        category: 'Research Direction 01',
+        title: 'Accelerator Architectures',
+        zh: 'Novel AI Accelerator Architectures',
+        description: 'Investigate novel accelerator microarchitectures, dataflows, memory hierarchies, and processing-in-memory technologies for large language models and AI workloads to reduce data movement and improve computational efficiency.',
+        tags: ['LLM Acceleration', 'Dataflow', 'PIM / CIM']
+      },
+      compiler: {
+        category: 'Research Direction 02',
+        title: 'Compiler Optimization',
+        zh: 'Compiler Optimization and Design Space Exploration',
+        description: 'Investigate hardware-aware operator mapping, data layout, task scheduling, memory allocation, and design space exploration to enable joint optimization across AI models, compilers, and hardware architectures.',
+        tags: ['Hardware-Aware Mapping', 'Scheduling', 'DSE']
+      },
+      security: {
+        category: 'Research Direction 03',
+        title: 'Hardware Security',
+        zh: 'Hardware Security and Trustworthy Computing',
+        description: 'Explore security mechanisms for AI accelerators, protection of computational data and intermediate results, and privacy-preserving computing, while balancing security, hardware overhead, and system performance.',
+        tags: ['Secure Accelerators', 'Data Protection', 'Privacy']
+      },
+      codesign: {
+        category: 'Research Methodology',
+        title: 'Cross-Layer Co-Design & Optimization',
+        zh: 'Cross-Layer Architecture–Compiler–Security Co-Design and Optimization',
+        description: 'Integrate architecture design, compiler mapping, and security mechanisms into a unified optimization framework to jointly balance computational throughput, data access overhead, energy efficiency, and security and trustworthiness requirements.',
+        tags: ['Architecture', 'Compiler', 'Security']
+      },
+      outcome: {
+        category: 'Research Goal',
+        title: 'Efficient & Trustworthy AI Computing Systems',
+        zh: 'Building Energy-Efficient and Trustworthy AI Computing Systems',
+        description: 'For real-world AI applications, balance performance, energy consumption, and trustworthiness to develop high-performance, energy-efficient, and secure AI computing systems.',
+        tags: ['Performance', 'Energy Efficiency', 'Trustworthiness']
+      }
+    };
+    const nodes = Array.from(document.querySelectorAll('[data-topic]'));
+    const popover = document.getElementById('research-popover');
+    const scrim = document.getElementById('popover-scrim');
+    const closeButton = document.getElementById('popover-close');
+    const category = document.getElementById('popover-category');
+    const title = document.getElementById('popover-title');
+    const zh = document.getElementById('popover-zh');
+    const description = document.getElementById('popover-desc');
+    const tagsContainer = document.getElementById('popover-tags');
+    let activeNode = null;
+    function closePopover(restoreFocus = false) {
+      if (!activeNode) return;
+      const oldNode = activeNode;
+      activeNode = null;
+      oldNode.setAttribute('aria-expanded', 'false');
+      popover.hidden = true;
+      scrim.hidden = true;
+      if (restoreFocus) oldNode.focus();
+    }
+    function positionPopover() {
+      if (!activeNode || popover.hidden || window.matchMedia('(max-width: 760px)').matches) return;
+      const anchor = activeNode.getBoundingClientRect();
+      const gap = 17;
+      const margin = 16;
+      const width = popover.offsetWidth;
+      const height = popover.offsetHeight;
+      const left = Math.min(Math.max(anchor.left + anchor.width / 2 - width / 2, margin), window.innerWidth - width - margin);
+      const spaceBelow = window.innerHeight - anchor.bottom - margin;
+      const spaceAbove = anchor.top - margin;
+      const preferBelow = spaceBelow >= height + gap || (spaceBelow >= spaceAbove && spaceAbove < height + gap);
+      const top = preferBelow
+        ? Math.min(anchor.bottom + gap, window.innerHeight - height - margin)
+        : Math.max(margin, anchor.top - height - gap);
+      popover.style.left = `${left}px`;
+      popover.style.top = `${top}px`;
+      popover.dataset.side = preferBelow ? 'below' : 'above';
+      const caretLeft = Math.max(20, Math.min(width - 20, anchor.left + anchor.width / 2 - left));
+      popover.style.setProperty('--caret-left', `${caretLeft}px`);
+    }
+    function openPopover(node, keyboard = false) {
+      if (activeNode === node) { closePopover(keyboard); return; }
+      if (activeNode) activeNode.setAttribute('aria-expanded', 'false');
+      activeNode = node;
+      activeNode.setAttribute('aria-expanded', 'true');
+      const data = TOPICS[node.dataset.topic];
+      category.textContent = data.category;
+      title.textContent = data.title;
+      zh.textContent = data.zh;
+      description.textContent = data.description;
+      tagsContainer.replaceChildren(...data.tags.map((label) => {
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.textContent = label;
+        return span;
+      }));
+      popover.hidden = false;
+      scrim.hidden = false;
+      positionPopover();
+      if (keyboard) closeButton.focus();
+    }
+    nodes.forEach((node) => {
+      node.addEventListener('click', (event) => openPopover(node, event.detail === 0));
+    });
+    closeButton.addEventListener('click', () => closePopover(true));
+    scrim.addEventListener('click', () => closePopover());
+    document.addEventListener('pointerdown', (event) => {
+      if (activeNode && !popover.contains(event.target) && !event.target.closest('[data-topic]')) closePopover();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && activeNode) { event.preventDefault(); closePopover(true); }
+    });
+    window.addEventListener('resize', positionPopover);
+    window.addEventListener('scroll', positionPopover, { passive: true });
+
+    // Match an embedded same-origin iframe's height to the diagram's content.
+    // This avoids unused whitespace when the original iframe has a fixed height.
+    function fitEmbeddedHeight() {
+      if (window === window.parent) return;
+      const height = Math.ceil(document.querySelector('.diagram').getBoundingClientRect().height);
+      try {
+        if (window.frameElement) {
+          window.frameElement.style.height = `${height}px`;
+          window.frameElement.style.minHeight = '0';
+        }
+      } catch (_) { /* A cross-origin parent controls its own iframe size. */ }
+    }
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(fitEmbeddedHeight).observe(document.querySelector('.diagram'));
+    }
+    window.addEventListener('load', fitEmbeddedHeight);
+  </script>
+</body>
+</html>
