@@ -101,8 +101,8 @@ table#tlayout {
 .admissions-banner {
   box-sizing: border-box;
   width: min(100%, 620px);
-  margin: 0.5em auto 1.25em;
-  padding: 0.4em 1em 1.5em;
+  margin: 0.5em auto 0.5em;
+  padding: 0.4em 1em 0.5em;
   text-align: center;
 }
 
@@ -165,8 +165,8 @@ table#tlayout {
 
 .profile-link img {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
